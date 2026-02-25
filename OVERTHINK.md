@@ -94,7 +94,7 @@ ANSI escape code constants + helper functions. All colors applied unconditionall
 
 #### `formatter.go`
 
-Renders the complete `AnalysisResult` to an `io.Writer`. Applies colors, formats sections, renders bars. Testable because it doesn't depend on `os.Stdout`.
+Renders the complete `AnalysisResult` to an `io.Writer`. Applies colors, formats sections, renders visual bar charts. The probability analysis is displayed as colored ASCII bars with embedded percentages rather than duplicated text + visual breakdown. Testable because it doesn't depend on `os.Stdout`.
 
 ### Ollama Integration: `internal/ollama/`
 
