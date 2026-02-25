@@ -11,13 +11,13 @@
 You have a simple question:
 
 ```
-"Should I text my ex?"
+"Should I quit my job?"
 ```
 
 What you need is **not** a simple answer. What you need is a ***peer-reviewed academic analysis*** complete with:
 
-- **Fabricated statistics** (63.4% chance of immediate regret, which is ~~definitely accurate~~ *suspiciously specific*)
-- **Fictional citations** from journals that ~~totally exist~~ don't exist
+- **Fabricated statistics** (63.4% chance of immediate regret, which is *suspiciously specific*)
+- **Fictional citations** from journals that don't exist
 - An **Emotional Risk Index** because your feelings deserve numerical quantification
 - **ASCII bar charts** because ***drama deserves visualization***
 - A philosophical conclusion that somehow ~~validates~~ ***validates whatever you're already planning to do anyway***
@@ -34,7 +34,7 @@ Every invocation of `overthink` produces:
 - 📈 An **Emotional Risk Index** (0–100) visualized with **colored ASCII bars** that change from calm green → concerning yellow → ***alarming red***
 - 📚 **Academic citations** from publications like *"Journal of Speculative Self-Sabotage"* and *"Proceedings on Human Indecision (Special Issue)"*
 - 🎯 A **Grand Conclusion** that's ***both definitive and utterly non-committal***
-- 😏 A **self-aware closing remark** that ~~validates~~ *judges* you
+- 😏 A **self-aware closing remark** that *judges* you
 
 Every run is different. ***Same question, infinite drama.***
 
@@ -42,47 +42,9 @@ Every run is different. ***Same question, infinite drama.***
 
 ## 🎪 An Actual Example
 
-```
-$ overthink "Should I quit my job?"
+![Emotional Risk Index Example](docs/assets/run-example.png)
 
-  THE IRREVERSIBLE EMOTIONAL CASCADE OF SHOULD QUIT
-──────────────────────────────────────────────────────
-
-Executive Summary:
-  Initial triage of this question triggered three separate alarm protocols.
-  The situation has been escalated to the Dramatic Analysis Unit.
-
-Probability Analysis:
-
-  * 28.2%  chance of creating a pros/cons list that solves nothing
-  * 30.1%  chance of consulting a horoscope
-  * 11.4%  chance of immediate regret
-  * 25.5%  chance of doing it anyway regardless of this report
-  *  4.8%  chance of unexpected, inconvenient clarity
-
-  Visual Breakdown:
-
-   28.2%  ███████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-   30.1%  ████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-   11.4%  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-   25.5%  ██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-    4.8%  █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-Emotional Risk Index: 78/100
-███████████████████████████████░░░░░░░░░
-
-Academic Citations:
-  [1] Journal of Speculative Self-Sabotage (2015)
-  [2] Bulletin of the Society for Spiraling Thoughts (2022)
-
-Grand Conclusion:
-  Historical precedent strongly suggests you will proceed regardless
-  of these findings. The system respects your autonomy and documents its objections.
-
-  --> You already know what you're going to do. This report just told you it was okay.
-```
-
-**Notice the colors?** The risk bar is ***red***. You should ~~definitely ignore~~ probably think about this more. Or don't. The tool has spoken. 🎭
+**Notice the colors?** The risk bar is ***red***. You should probably think about this more. Or don't. The tool has spoken. 🎭
 
 ---
 
@@ -138,7 +100,7 @@ overthink --thinker llama3 "What does my life mean?"
 overthink --thinker deepseek-coder "Should I refactor this legacy code?"
 ```
 
-***Pro tip:*** If Ollama ~~crashes~~ isn't running or that model doesn't exist, the tool **gracefully falls back** to the local engine with a warning. The drama **never stops**.
+***Pro tip:*** If Ollama isn't running or that model doesn't exist, the tool **gracefully falls back** to the local engine with a warning. The drama **never stops**.
 
 ---
 
@@ -146,7 +108,7 @@ overthink --thinker deepseek-coder "Should I refactor this legacy code?"
 
 ### 🏃 Local Mode (Default)
 
-Runs **entirely offline**. Uses a time-seeded random number generator, so every invocation produces ***fresh, unique drama***. No two analyses of the same question will ever be identical—unless you're running them so fast the clock hasn't changed, ~~which means you're healthy~~ *which says something about your anxiety levels*.
+Runs **entirely offline**. Uses a time-seeded random number generator, so every invocation produces ***fresh, unique drama***. No two analyses of the same question will ever be identical—unless you're running them so fast the clock hasn't changed, *which says something about your anxiety levels*.
 
 ### 🤖 Ollama Mode (`--thinker <model>`)
 
@@ -173,7 +135,7 @@ Interested in how it works? See [OVERTHINK.md](OVERTHINK.md) for ***architecture
 >
 > ***Use it accordingly.***
 
-Now ~~read the source code~~ **stop reading** and run:
+Now **stop reading** and run:
 
 ```bash
 ./overthink "something that matters"
