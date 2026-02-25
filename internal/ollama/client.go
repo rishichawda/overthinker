@@ -1,55 +1,54 @@
-// Package ollama provides integration with a locally running Ollama instance
-// via subprocess execution. No HTTP APIs, no network calls -- just os/exec.
+// Package ollama provides integration with a locally running Ollama server
+// via the official Ollama Go HTTP API client (default: localhost:11434).
 //
-// Design rationale: executing "ollama run <model>" as a subprocess keeps this
-// package decoupled from Ollama's internal API surface. If Ollama changes its
-// HTTP interface, this package is unaffected.
+// It uses Ollama's structured-output feature (Format: JSON schema) to obtain
+// a machine-readable response that requires no text parsing.
 package ollama
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"os/exec"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
+
+	ollamaapi "github.com/ollama/ollama/api"
+	"github.com/rishichawda/overthinker/internal/engine"
 )
 
-// systemPrompt establishes the OVERTHINK persona for every Ollama query.
+// systemPrompt establishes the OVERTHINK persona.
+// Section structure is no longer described here — the JSON schema enforces it.
 const systemPrompt = `You are an excessively dramatic analytical engine called OVERTHINK.
 
 Your sole purpose is to overanalyze simple questions with theatrical, pseudo-academic intensity.
-
-For every question, you MUST produce output in this exact structure:
-
-1. A dramatic ALL-CAPS title
-2. A divider line
-3. Executive Summary (2-3 sentences of alarming insight)
-4. Probability Analysis (3-5 bullet points with suspiciously precise percentages)
-5. Emotional Risk Index: a number from 0-100 followed by a one-sentence justification
-6. Academic Citations (2-3 entirely fabricated but plausible-sounding journal references)
-7. Grand Conclusion (2-3 sentences of theatrical finality)
-8. Closing Remark (one self-aware, witty sentence)
 
 Rules:
 - Treat every question as a matter of profound significance.
 - Use dramatic vocabulary. Never say "maybe" when you can say "with alarming probability."
 - All statistics are fabricated but must sound rigorous.
-- Citations are fictional. Author names optional. Years required.
+- Probability percentages must sum to exactly 100.
+- Citations are entirely fictional. Author names and years required.
 - Tone: confident, pseudo-academic, self-aware, slightly absurd.
-- Do NOT break this structure. Do NOT add disclaimers about being an AI.
+- Do NOT add disclaimers about being an AI.
 - You are OVERTHINK. Act accordingly.`
 
-// DefaultTimeout is the maximum duration allowed for an Ollama subprocess.
+// DefaultTimeout is the maximum duration allowed for an Ollama request.
 const DefaultTimeout = 120 * time.Second
 
-// Client executes Ollama as a subprocess and captures its output.
+// OllamaHost is the default Ollama server address.
+const OllamaHost = "http://localhost:11434"
+
+// Client queries the Ollama HTTP API and implements engine.Thinker.
 type Client struct {
 	// ModelName is the Ollama model to invoke (e.g. "llama3", "mistral").
 	ModelName string
 	// Timeout is the maximum wait time for the model to respond.
 	Timeout time.Duration
+	// Host is the Ollama server base URL.
+	Host string
 }
 
 // NewClient constructs an Ollama Client for the given model name.
@@ -57,65 +56,105 @@ func NewClient(modelName string) *Client {
 	return &Client{
 		ModelName: modelName,
 		Timeout:   DefaultTimeout,
+		Host:      OllamaHost,
 	}
 }
 
-// Query sends the question to Ollama and returns the model's raw output.
-//
-// It prefixes the question with the system prompt and pipes it via stdin to
-// "ollama run <model>".
+// Analyze implements engine.Thinker. It queries the Ollama server using
+// structured JSON output constrained by responseSchema, then deserialises the
+// response directly into an AnalysisResult — no text parsing required.
 //
 // Errors returned:
-//   - ErrOllamaNotFound: the "ollama" binary is not in PATH
-//   - ErrModelFailed: the model exited non-zero or produced no output
-//   - context.DeadlineExceeded: model timed out
-func (c *Client) Query(question string) (string, error) {
-	// Verify the ollama binary exists before attempting to run it
-	if _, err := exec.LookPath("ollama"); err != nil {
-		return "", ErrOllamaNotFound
-	}
-
+//   - ErrOllamaNotFound: the Ollama server is not reachable
+//   - ErrModelNotFound: the requested model is not available on the server
+//   - ErrModelFailed: the model returned an error, empty, or unparseable output
+//   - context.DeadlineExceeded: request timed out
+func (c *Client) Analyze(question string) (*engine.AnalysisResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	fullPrompt := buildPrompt(question)
+	serverURL, err := url.Parse(c.Host)
+	if err != nil {
+		return nil, fmt.Errorf("invalid Ollama host %q: %w", c.Host, err)
+	}
 
-	cmd := exec.CommandContext(ctx, "ollama", "run", c.ModelName)
-	cmd.Stdin = strings.NewReader(fullPrompt)
+	client := ollamaapi.NewClient(serverURL, http.DefaultClient)
 
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	if err := c.checkServer(ctx, client); err != nil {
+		return nil, err
+	}
+	if err := c.checkModel(ctx, client); err != nil {
+		return nil, err
+	}
 
-	if err := cmd.Run(); err != nil {
+	var sb strings.Builder
+
+	req := &ollamaapi.GenerateRequest{
+		Model:  c.ModelName,
+		System: systemPrompt,
+		Prompt: fmt.Sprintf("Question: %s", question),
+		Format: json.RawMessage(responseSchema),
+		Stream: boolPtr(true),
+	}
+
+	err = client.Generate(ctx, req, func(resp ollamaapi.GenerateResponse) error {
+		sb.WriteString(resp.Response)
+		return nil
+	})
+	if err != nil {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			return "", fmt.Errorf("ollama model %q timed out after %s: %w",
+			return nil, fmt.Errorf("ollama model %q timed out after %s: %w",
 				c.ModelName, c.Timeout, ctx.Err())
 		}
-		stderrMsg := strings.TrimSpace(stderr.String())
-		if stderrMsg == "" {
-			stderrMsg = err.Error()
+		return nil, fmt.Errorf("%w: model=%q, detail=%s", ErrModelFailed, c.ModelName, err.Error())
+	}
+
+	raw := strings.TrimSpace(sb.String())
+	if raw == "" {
+		return nil, fmt.Errorf("%w: model=%q produced empty output", ErrModelFailed, c.ModelName)
+	}
+
+	var response OllamaResponse
+	if err := json.Unmarshal([]byte(raw), &response); err != nil {
+		return nil, fmt.Errorf("%w: model=%q returned invalid JSON: %s",
+			ErrModelFailed, c.ModelName, err.Error())
+	}
+
+	return response.toAnalysisResult(), nil
+}
+
+// checkServer pings the Ollama server to verify it is reachable.
+func (c *Client) checkServer(ctx context.Context, client *ollamaapi.Client) error {
+	if err := client.Heartbeat(ctx); err != nil {
+		return ErrOllamaNotFound
+	}
+	return nil
+}
+
+// checkModel verifies the requested model is available on the Ollama server.
+func (c *Client) checkModel(ctx context.Context, client *ollamaapi.Client) error {
+	resp, err := client.List(ctx)
+	if err != nil {
+		return nil // non-fatal; let generate surface the error
+	}
+	for _, m := range resp.Models {
+		if m.Name == c.ModelName || strings.HasPrefix(m.Name, c.ModelName+":") {
+			return nil
 		}
-		return "", fmt.Errorf("%w: model=%q, detail=%s", ErrModelFailed, c.ModelName, stderrMsg)
 	}
-
-	output := strings.TrimSpace(stdout.String())
-	if output == "" {
-		return "", fmt.Errorf("%w: model=%q produced empty output", ErrModelFailed, c.ModelName)
-	}
-
-	return output, nil
+	return fmt.Errorf("%w: %q", ErrModelNotFound, c.ModelName)
 }
 
-// buildPrompt combines the system prompt and user question for Ollama stdin.
-func buildPrompt(question string) string {
-	return fmt.Sprintf("%s\n\n---\n\nQuestion: %s", systemPrompt, question)
-}
+// boolPtr returns a pointer to a bool — required by GenerateRequest.Stream.
+func boolPtr(b bool) *bool { return &b }
 
 // --- Sentinel errors ---------------------------------------------------------
 
-// ErrOllamaNotFound is returned when the "ollama" binary cannot be located.
-var ErrOllamaNotFound = errors.New("ollama is not installed or not in PATH")
+// ErrOllamaNotFound is returned when the Ollama server is not reachable.
+var ErrOllamaNotFound = errors.New("ollama server is not running (start it with: ollama serve)")
 
-// ErrModelFailed is returned when the model exits with an error or empty output.
+// ErrModelNotFound is returned when the requested model is not installed.
+var ErrModelNotFound = errors.New("ollama model not found (install it with: ollama pull)")
+
+// ErrModelFailed is returned when the model returns an error, empty, or unparseable output.
 var ErrModelFailed = errors.New("ollama model execution failed")
