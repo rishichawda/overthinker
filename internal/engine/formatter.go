@@ -21,12 +21,11 @@ func NewFormatter(w io.Writer) *Formatter {
 //  1. DRAMATIC TITLE
 //  2. Divider line
 //  3. Executive Summary
-//  4. Probability Analysis
+//  4. Probability Analysis (visual bars with percentages)
 //  5. Emotional Risk Index + ASCII bar
-//  6. ASCII Visualization (probability bars)
-//  7. Academic Citations
-//  8. Grand Conclusion
-//  9. Closing Line
+//  6. Academic Citations
+//  7. Grand Conclusion
+//  8. Closing Line
 func (f *Formatter) Print(result *AnalysisResult) {
 	f.line("")
 	f.linef("  %s", boldCyan(result.Title))
@@ -74,12 +73,6 @@ func (f *Formatter) section(heading, body string) {
 
 func (f *Formatter) printProbabilities(probs []Probability) {
 	f.linef("%s:", boldYellow("Probability Analysis"))
-	f.line("")
-	for _, p := range probs {
-		f.linef("  %s%5.1f%s%%  %s", colorBrightCyan, p.Percentage, colorReset, dim(p.Label))
-	}
-	f.line("")
-	f.linef("  %s", dim("Visual Breakdown:"))
 	f.line("")
 	f.line(RenderProbabilityBars(probs, colorBrightCyan))
 }
