@@ -7,8 +7,9 @@
 //	overthink "Should I text my ex?"
 //	overthink --thinker llama3 "Should I quit my job?"
 //
-// If --thinker is provided, the question is passed to a locally running Ollama
-// instance. If Ollama is unavailable or fails, the built-in engine takes over.
+// If --thinker is provided, the question is sent to a locally running Ollama
+// server via the HTTP API. If Ollama is unavailable or fails, the built-in
+// local engine takes over.
 package main
 
 import (
@@ -18,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/rishichawda/overthinker/internal/engine"
+	"github.com/rishichawda/overthinker/internal/local"
 	"github.com/rishichawda/overthinker/internal/ollama"
 )
 
@@ -39,16 +41,11 @@ If no question is provided, this message is printed and the program exits.
 `
 
 func main() {
-	// Using the standard flag package: one optional flag does not justify Cobra.
 	thinkerFlag := flag.String("thinker", "", "Ollama model name to use for analysis")
 
-	flag.Usage = func() {
-		fmt.Fprint(os.Stderr, usageText)
-	}
-
+	flag.Usage = func() { fmt.Fprint(os.Stderr, usageText) }
 	flag.Parse()
 
-	// Join all remaining arguments to support unquoted multi-word questions
 	args := flag.Args()
 	if len(args) == 0 {
 		flag.Usage()
@@ -63,28 +60,26 @@ func main() {
 
 	formatter := engine.NewFormatter(os.Stdout)
 
-	// Ollama path
 	if *thinkerFlag != "" {
-		handleOllamaMode(question, *thinkerFlag, formatter)
+		runWithOllama(question, *thinkerFlag, formatter)
 		return
 	}
 
-	// Local engine path
-	result := engine.Analyze(question)
+	result, _ := local.New().Analyze(question)
 	formatter.Print(result)
 }
 
-// handleOllamaMode attempts to query the specified Ollama model.
-// On any failure it emits a graceful warning and falls back to the local engine.
-func handleOllamaMode(question, modelName string, formatter *engine.Formatter) {
-	client := ollama.NewClient(modelName)
-	output, err := client.Query(question)
+// runWithOllama queries the Ollama model and renders the result with full
+// formatting. On any error it warns and falls back to the local engine.
+func runWithOllama(question, model string, formatter *engine.Formatter) {
+	result, err := ollama.NewClient(model).Analyze(question)
 	if err != nil {
 		formatter.PrintWarning(fmt.Sprintf("%v", err))
-		result := engine.Analyze(question)
+		result, _ = local.New().Analyze(question)
 		formatter.Print(result)
 		return
 	}
 
-	formatter.PrintOllamaOutput(modelName, output)
+	formatter.PrintModelHeader(model)
+	formatter.Print(result)
 }

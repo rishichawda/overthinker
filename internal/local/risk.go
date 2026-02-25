@@ -1,4 +1,4 @@
-package engine
+package local
 
 import (
 	"math/rand"
@@ -6,8 +6,6 @@ import (
 )
 
 // riskKeywords maps thematic keywords to a risk score increment.
-// The presence of high-anxiety vocabulary in the question elevates
-// the Emotional Risk Index proportionally.
 var riskKeywords = map[string]int{
 	// Romantic peril
 	"ex": 25, "text": 10, "love": 15, "date": 12,
@@ -38,18 +36,15 @@ var riskKeywords = map[string]int{
 	"never": 12, "always": 8, "finally": 10,
 }
 
-// CalculateRiskIndex computes the Emotional Risk Index (0-100) for a given question.
-// Combines keyword-weighted semantic analysis with a pseudo-random baseline to ensure
-// the score is always both defensible and slightly alarming.
-func CalculateRiskIndex(question string, rng *rand.Rand) int {
+// calculateRiskIndex computes the Emotional Risk Index (0-100) for a given question.
+func calculateRiskIndex(question string, rng *rand.Rand) int {
 	lower := strings.ToLower(question)
 	words := strings.Fields(lower)
 
-	// Baseline: 20-39. Nobody has it figured out.
 	base := 20 + rng.Intn(20)
 
 	accumulated := 0
-	seen := make(map[string]bool) // prevent duplicate keyword inflation
+	seen := make(map[string]bool)
 	for _, word := range words {
 		clean := strings.Trim(word, ".,?!;:'\"")
 		if score, ok := riskKeywords[clean]; ok && !seen[clean] {

@@ -3,7 +3,6 @@ package engine
 import (
 	"fmt"
 	"io"
-	"strings"
 )
 
 // Formatter handles all terminal output for the overthink engine.
@@ -46,14 +45,12 @@ func (f *Formatter) Print(result *AnalysisResult) {
 	f.line("")
 }
 
-// PrintOllamaOutput renders attribution header then the raw Ollama response.
-func (f *Formatter) PrintOllamaOutput(model, output string) {
+// PrintModelHeader renders the "[ Thinker: model ]" attribution header.
+// Call this before Print when displaying results from an LLM.
+func (f *Formatter) PrintModelHeader(model string) {
 	f.line("")
 	f.linef("  %s", boldCyan("[ Thinker: "+model+" ]"))
 	f.line(dim(RenderDivider(60)))
-	f.line("")
-	f.line(strings.TrimSpace(output))
-	f.line("")
 }
 
 // PrintWarning prints a formatted warning message.

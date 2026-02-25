@@ -1,22 +1,14 @@
-package engine
+package local
 
 import (
 	"math"
 	"math/rand"
 
+	"github.com/rishichawda/overthinker/internal/engine"
 	"github.com/rishichawda/overthinker/internal/utils"
 )
 
-// Probability represents a single entry in the pseudo-statistical breakdown.
-// The Label describes the outcome; Percentage is a suspiciously precise number.
-type Probability struct {
-	Label      string
-	Percentage float64
-}
-
 // outcomeLabels is the canonical pool of dramatic outcome descriptions.
-// Designed to sound plausible while remaining universally applicable to any
-// question a human might ask at 2am.
 var outcomeLabels = []string{
 	"chance of immediate regret",
 	"chance of mild existential dread",
@@ -38,18 +30,14 @@ var outcomeLabels = []string{
 	"chance of doing it anyway regardless of this report",
 }
 
-// GenerateProbabilities produces 3-5 pseudo-statistical probability entries
-// that sum to exactly 100.0%. Values are seeded deterministically so identical
-// questions yield identical, reproducible anxiety.
-func GenerateProbabilities(rng *rand.Rand) []Probability {
-	// Pick between 3 and 5 outcomes for variety
+// generateProbabilities produces 3-5 pseudo-statistical probability entries
+// that sum to exactly 100.0%.
+func generateProbabilities(rng *rand.Rand) []engine.Probability {
 	count := 3 + rng.Intn(3)
 
-	// Shuffle the label pool and take the first count entries
 	shuffled := utils.ShuffleStrings(rng, outcomeLabels)
 	chosen := shuffled[:count]
 
-	// Generate raw random weights, biased toward mid-range (10-70) for plausibility
 	weights := make([]float64, count)
 	total := 0.0
 	for i := 0; i < count; i++ {
@@ -58,16 +46,14 @@ func GenerateProbabilities(rng *rand.Rand) []Probability {
 		total += w
 	}
 
-	// Normalize to percentages with 1 decimal place for that authentic academic feel
-	probs := make([]Probability, count)
+	probs := make([]engine.Probability, count)
 	running := 0.0
 	for i := 0; i < count-1; i++ {
 		pct := math.Round((weights[i]/total)*1000) / 10
 		running += pct
-		probs[i] = Probability{Label: chosen[i], Percentage: pct}
+		probs[i] = engine.Probability{Label: chosen[i], Percentage: pct}
 	}
-	// Assign remainder to last entry so the total is provably 100.0%
-	probs[count-1] = Probability{
+	probs[count-1] = engine.Probability{
 		Label:      chosen[count-1],
 		Percentage: math.Round((100.0-running)*10) / 10,
 	}

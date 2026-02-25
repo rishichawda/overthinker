@@ -1,23 +1,35 @@
-package engine
+// Package local provides a deterministic, self-contained overthink engine.
+// It requires no external services and generates reproducible dramatic output
+// using seeded random selection from curated template pools.
+package local
 
 import (
 	"fmt"
 	"math/rand"
 	"strings"
 
+	"github.com/rishichawda/overthinker/internal/engine"
 	"github.com/rishichawda/overthinker/internal/utils"
 )
 
-// AnalysisResult is the complete, peer-reviewed output of the overthink engine.
-// Every field is populated deterministically from the input question.
-type AnalysisResult struct {
-	Title         string
-	Summary       string
-	Probabilities []Probability
-	RiskIndex     int
-	Citations     []Citation
-	Conclusion    string
-	ClosingLine   string
+// Engine is the local deterministic Thinker implementation.
+type Engine struct{}
+
+// New constructs a local Engine.
+func New() *Engine { return &Engine{} }
+
+// Analyze implements engine.Thinker. It never returns an error.
+func (e *Engine) Analyze(question string) (*engine.AnalysisResult, error) {
+	rng := utils.NewRand()
+	return &engine.AnalysisResult{
+		Title:         generateTitle(question, rng),
+		Summary:       generateSummary(rng),
+		Probabilities: generateProbabilities(rng),
+		RiskIndex:     calculateRiskIndex(question, rng),
+		Citations:     generateCitations(rng),
+		Conclusion:    generateConclusion(rng),
+		ClosingLine:   generateClosingLine(rng),
+	}, nil
 }
 
 // --- Title Generation --------------------------------------------------------
@@ -72,8 +84,6 @@ var stopWords = map[string]bool{
 	"over": true, "such": true, "here": true, "very": true, "much": true,
 }
 
-// generateTitle constructs an ALL-CAPS title from the input question.
-// Extracts meaningful content words to create context-specific drama.
 func generateTitle(question string, rng *rand.Rand) string {
 	prefix := utils.PickString(rng, dramaticPrefixes)
 	noun := utils.PickString(rng, dramaticNouns)
@@ -159,23 +169,4 @@ var closingLines = []string{
 
 func generateClosingLine(rng *rand.Rand) string {
 	return utils.PickString(rng, closingLines)
-}
-
-// --- Public API --------------------------------------------------------------
-
-// Analyze is the primary entry point for the overthink engine.
-// It accepts the raw user question and returns a fully populated AnalysisResult.
-// Each invocation uses a fresh random seed, so output varies on every run.
-func Analyze(question string) *AnalysisResult {
-	rng := utils.NewRand()
-
-	return &AnalysisResult{
-		Title:         generateTitle(question, rng),
-		Summary:       generateSummary(rng),
-		Probabilities: GenerateProbabilities(rng),
-		RiskIndex:     CalculateRiskIndex(question, rng),
-		Citations:     GenerateCitations(rng),
-		Conclusion:    generateConclusion(rng),
-		ClosingLine:   generateClosingLine(rng),
-	}
 }

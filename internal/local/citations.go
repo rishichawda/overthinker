@@ -1,19 +1,12 @@
-package engine
+package local
 
 import (
 	"fmt"
 	"math/rand"
 
+	"github.com/rishichawda/overthinker/internal/engine"
 	"github.com/rishichawda/overthinker/internal/utils"
 )
-
-// Citation represents a single fabricated academic reference.
-// All citations are entirely fictional. Any resemblance to real journals
-// is a symptom of academic overexposure.
-type Citation struct {
-	Index  int
-	Source string
-}
 
 // journalNames is the authoritative pool of imaginary academic publications.
 var journalNames = []string{
@@ -49,19 +42,18 @@ var authorSuffixes = []string{
 	"(Peer-reviewed by one very tired colleague)",
 }
 
-// GenerateCitations produces 2-4 fabricated academic citations seeded
-// deterministically, making them reproducible and therefore authoritative.
-func GenerateCitations(rng *rand.Rand) []Citation {
-	count := 2 + rng.Intn(3) // 2 to 4 citations
+// generateCitations produces 2-4 fabricated academic citations.
+func generateCitations(rng *rand.Rand) []engine.Citation {
+	count := 2 + rng.Intn(3)
 
 	shuffled := utils.ShuffleStrings(rng, journalNames)
 	selected := shuffled[:count]
 
-	citations := make([]Citation, count)
+	citations := make([]engine.Citation, count)
 	for i, journal := range selected {
 		year := 2008 + rng.Intn(17)
 		suffix := utils.PickString(rng, authorSuffixes)
-		citations[i] = Citation{
+		citations[i] = engine.Citation{
 			Index:  i + 1,
 			Source: fmt.Sprintf("%s %s (%d)", journal, suffix, year),
 		}
