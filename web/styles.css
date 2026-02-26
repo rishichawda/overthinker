@@ -321,6 +321,10 @@ strong {
 .t-green { color: var(--green); }
 .t-yellow { color: var(--yellow); }
 .t-red { color: var(--red); }
+.t-cmd { color: #79c0ff; }
+.t-arg { color: var(--green); }
+.t-flag { color: #d2a8ff; }
+.t-str { color: #a5d6ff; }
 
 .terminal-footnote {
     font-size: 0.78rem;
@@ -440,17 +444,17 @@ strong {
     border-top: 1px solid var(--rule);
 }
 
-.install-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+.install-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     margin-top: 28px;
 }
 
 .install-option {
-    padding: 20px;
     border: 1px solid var(--rule);
     border-radius: 6px;
+    overflow: hidden;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -459,22 +463,35 @@ strong {
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
+.install-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 20px;
+    background: rgba(0,0,0,0.015);
+    border-bottom: 1px solid var(--rule);
+}
+
 .install-option h3 {
     font-family: var(--serif);
     font-size: 1.1rem;
     font-weight: 400;
-    margin-bottom: 2px;
+    margin-bottom: 0;
     color: var(--ink);
 }
 
 .install-platform {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-family: var(--mono);
     color: var(--ink-faint);
-    display: block;
-    margin-bottom: 14px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+}
+
+.install-option .code-block {
+    margin: 0;
+    border-radius: 0;
+    padding: 16px 20px;
 }
 
 .code-block {
@@ -628,10 +645,6 @@ strong {
         gap: 24px;
     }
 
-    .install-grid {
-        grid-template-columns: 1fr;
-    }
-
     .pull-quote blockquote {
         font-size: 1.3rem;
     }
@@ -653,6 +666,7 @@ strong {
     .terminal-body pre { font-size: 0.72rem; }
 
     .finding { padding: 20px 16px; }
-    .install-option { padding: 16px; }
+    .install-option .code-block { padding: 12px 16px; }
+    .install-header { padding: 10px 16px; }
     .code-block { font-size: 0.72rem; padding: 12px; }
 }
