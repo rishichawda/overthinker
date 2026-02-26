@@ -1,11 +1,13 @@
 Name:           overthink
-Version:        1.0.0
+# Version is injected at build time via: rpmbuild --define "package_version X.Y.Z"
+%{!?package_version: %define package_version 0.0.0}
+Version:        %{package_version}
 Release:        1%{?dist}
 Summary:        A dramatic overanalysis engine for your questionable life decisions
 
 License:        MIT
 URL:            https://github.com/rishichawda/overthinker
-Source0:        https://github.com/rishichawda/overthinker/archive/refs/tags/v%{version}.tar.gz
+Source0:        https://github.com/rishichawda/overthinker/archive/refs/tags/v%{package_version}.tar.gz
 
 BuildRequires:  golang >= 1.24
 

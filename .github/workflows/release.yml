@@ -230,6 +230,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install RPM build tools
+        run: sudo apt-get update -qq && sudo apt-get install -y rpm curl
+
+      - name: Build SRPM
+        env:
+          VERSION: ${{ needs.resolve-version.outputs.version }}
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          cp build/packages/rpm/overthink.spec ~/rpmbuild/SPECS/overthink.spec
+
+          # Hardcode the version directly into the spec so that when COPR
+          # extracts and rebuilds from the SRPM, it doesn't fall back to 0.0.0
+          sed -i "s/^%{!?package_version:.*/%global package_version ${VERSION}/" \
+            ~/rpmbuild/SPECS/overthink.spec
+
+          # Source0 URL ends with v<VERSION>.tar.gz — filename must match
+          curl -fsSL \
+            "https://github.com/rishichawda/overthinker/archive/refs/tags/v${VERSION}.tar.gz" \
+            -o ~/rpmbuild/SOURCES/v${VERSION}.tar.gz
+
+          # Build source RPM only
+          rpmbuild -bs ~/rpmbuild/SPECS/overthink.spec
+
       - name: Install copr-cli
         run: pip install copr-cli
 
@@ -238,10 +261,7 @@ jobs:
           mkdir -p ~/.config
           echo "${{ secrets.COPR_CONFIG }}" > ~/.config/copr
 
-      - name: Submit COPR build
+      - name: Submit SRPM to COPR
         run: |
-          copr-cli buildscm rishichawda/overthink \
-            --clone-url https://github.com/rishichawda/overthinker \
-            --spec build/packages/rpm/overthink.spec \
-            --type git \
-            --commit v${{ needs.resolve-version.outputs.version }}
+          srpm=$(ls ~/rpmbuild/SRPMS/overthink-*.src.rpm)
+          copr-cli build rishichawda/overthink "$srpm"
