@@ -3,10 +3,10 @@ Version: 0.1.0
 Architecture: arm64
 Maintainer: Rishi Chawda <rishiikumar97@gmail.com>
 Filename: pool/main/overthink_0.1.0_arm64.deb
-Size: 2117276
-MD5sum: 81433088c6ad2b540d280df6eb6724cc
-SHA1: c8b7ed997cc9bca14656eb23ca4cb146d87112e5
-SHA256: 173791127069bb39ac777ca14e44be62226af1a0786ecda9c7643531efd9c95f
+Size: 2117292
+MD5sum: 1cb9e5af6f88b288dd15e01a5fb82fa8
+SHA1: 7cbc6052e506140a6c6274673e9a33254c75b6d6
+SHA256: feda9eec55551c99bf687127b83e303d71b5734fe00915aa56ecfd283f281b73
 Section: utils
 Priority: optional
 Homepage: https://github.com/rishichawda/overthinker
