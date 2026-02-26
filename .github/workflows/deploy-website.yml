@@ -1,0 +1,78 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/**'
+      - '.github/workflows/deploy-website.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Build website into temporary directory
+        run: |
+          mkdir -p /tmp/website-build
+          cp -r web/* /tmp/website-build/
+          touch /tmp/website-build/.nojekyll
+
+      - name: Switch to gh-pages branch
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          if git show-ref --quiet refs/heads/gh-pages; then
+            git checkout gh-pages
+          else
+            git checkout --orphan gh-pages
+            git rm -rf .
+          fi
+
+      - name: Deploy website files (preserve everything else)
+        run: |
+          # Only remove previous website files — never touch package infrastructure
+          # Website files live at the root level (html, css, js, assets, .nojekyll)
+          # Package files live in dists/, pool/, and *.gpg — we never touch those
+          rm -f index.html styles.css .nojekyll
+          rm -rf assets/ 2>/dev/null || true
+
+          # Copy new website files in
+          cp -r /tmp/website-build/* .
+          cp /tmp/website-build/.nojekyll . 2>/dev/null || true
+
+          echo ""
+          echo "== gh-pages contents after deploy =="
+          ls -la
+          echo ""
+          echo "== Package directories preserved =="
+          [ -d "dists" ] && echo "  dists/ ✓" || echo "  dists/ (not present)"
+          [ -d "pool" ] && echo "  pool/ ✓" || echo "  pool/ (not present)"
+          [ -f "overthink-archive-keyring.gpg" ] && echo "  overthink-archive-keyring.gpg ✓" || echo "  overthink-archive-keyring.gpg (not present)"
+
+      - name: Commit and push
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Deploy website from main@$(git rev-parse --short origin/main)"
+            git push origin gh-pages
+          fi
