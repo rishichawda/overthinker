@@ -157,49 +157,61 @@ is both definitive and utterly non-committal.</span></pre>
             <h2 class="section-heading">Acquire the Tool</h2>
             <p class="section-subheading">Choose your vector of self-sabotage</p>
 
-            <div class="install-grid">
+            <div class="install-list">
                 <div class="install-option">
-                    <h3>Homebrew</h3>
-                    <span class="install-platform">macOS &amp; Linux</span>
-                    <code class="code-block">brew install rishichawda/tap/overthink</code>
+                    <div class="install-header">
+                        <h3>Homebrew</h3>
+                        <span class="install-platform">macOS &amp; Linux</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">brew</span> <span class="t-arg">install</span> rishichawda/tap/overthink</pre>
                 </div>
 
                 <div class="install-option">
-                    <h3>Chocolatey</h3>
-                    <span class="install-platform">Windows</span>
-                    <code class="code-block">choco install overthink</code>
+                    <div class="install-header">
+                        <h3>Chocolatey</h3>
+                        <span class="install-platform">Windows</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">choco</span> <span class="t-arg">install</span> overthink</pre>
                 </div>
 
                 <div class="install-option">
-                    <h3>Bash Script</h3>
-                    <span class="install-platform">macOS &amp; Linux</span>
-                    <code class="code-block">curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | bash</code>
+                    <div class="install-header">
+                        <h3>Bash Script</h3>
+                        <span class="install-platform">macOS &amp; Linux</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">curl</span> <span class="t-flag">-fsSL</span> <span class="t-str">https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh</span> | <span class="t-cmd">bash</span></pre>
                 </div>
 
                 <div class="install-option">
-                    <h3>APT</h3>
-                    <span class="install-platform">Ubuntu / Debian</span>
-                    <code class="code-block">curl -1sLf 'https://rishichawda.github.io/overthinker/overthink-archive-keyring.gpg' \
-  | sudo gpg --dearmor -o /usr/share/keyrings/rishichawda-archive-keyring.gpg
+                    <div class="install-header">
+                        <h3>APT</h3>
+                        <span class="install-platform">Ubuntu / Debian</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">curl</span> <span class="t-flag">-1sLf</span> <span class="t-str">'https://rishichawda.github.io/overthinker/overthink-archive-keyring.gpg'</span> \
+  | <span class="t-cmd">sudo</span> <span class="t-cmd">gpg</span> <span class="t-flag">--dearmor</span> <span class="t-flag">-o</span> /usr/share/keyrings/rishichawda-archive-keyring.gpg
 
-echo "deb [signed-by=/usr/share/keyrings/rishichawda-archive-keyring.gpg] \
-  https://rishichawda.github.io/overthinker stable main" \
-  | sudo tee /etc/apt/sources.list.d/rishichawda.list
+<span class="t-cmd">echo</span> <span class="t-str">"deb [signed-by=/usr/share/keyrings/rishichawda-archive-keyring.gpg] \
+  https://rishichawda.github.io/overthinker stable main"</span> \
+  | <span class="t-cmd">sudo</span> <span class="t-cmd">tee</span> /etc/apt/sources.list.d/rishichawda.list
 
-sudo apt-get update && sudo apt-get install overthink</code>
+<span class="t-cmd">sudo</span> <span class="t-cmd">apt-get</span> <span class="t-arg">update</span> && <span class="t-cmd">sudo</span> <span class="t-cmd">apt-get</span> <span class="t-arg">install</span> overthink</pre>
                 </div>
 
                 <div class="install-option">
-                    <h3>DNF / Copr</h3>
-                    <span class="install-platform">Fedora / RHEL</span>
-                    <code class="code-block">sudo dnf copr enable rishichawda/overthink
-sudo dnf install overthink</code>
+                    <div class="install-header">
+                        <h3>DNF / Copr</h3>
+                        <span class="install-platform">Fedora / RHEL</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">sudo</span> <span class="t-cmd">dnf</span> <span class="t-arg">copr enable</span> rishichawda/overthink
+<span class="t-cmd">sudo</span> <span class="t-cmd">dnf</span> <span class="t-arg">install</span> overthink</pre>
                 </div>
 
                 <div class="install-option">
-                    <h3>Go Install</h3>
-                    <span class="install-platform">Any platform with Go</span>
-                    <code class="code-block">go install github.com/rishichawda/overthinker/cmd/overthink@latest</code>
+                    <div class="install-header">
+                        <h3>Go Install</h3>
+                        <span class="install-platform">Any platform with Go</span>
+                    </div>
+                    <pre class="code-block"><span class="t-cmd">go</span> <span class="t-arg">install</span> <span class="t-str">github.com/rishichawda/overthinker/cmd/overthink@latest</span></pre>
                 </div>
             </div>
 
@@ -210,16 +222,16 @@ sudo dnf install overthink</code>
         <section class="usage-section">
             <h2 class="section-heading">Field Application</h2>
             <div class="usage-examples">
-                <code class="code-block"><span class="t-dim"># The basics</span>
-overthink "Should I quit my job?"
+                <pre class="code-block"><span class="t-dim"># The basics</span>
+<span class="t-cmd">overthink</span> <span class="t-str">"Should I quit my job?"</span>
 
 <span class="t-dim"># Let a local LLM add its own neuroses</span>
-overthink --thinker llama3 "What does my life mean?"
+<span class="t-cmd">overthink</span> <span class="t-flag">--thinker</span> <span class="t-arg">llama3</span> <span class="t-str">"What does my life mean?"</span>
 
 <span class="t-dim"># The truly important questions</span>
-overthink "Should I adopt a third cat?"
-overthink "Is pineapple on pizza a moral issue?"
-overthink "Why did I message them at 2am?"</code>
+<span class="t-cmd">overthink</span> <span class="t-str">"Should I adopt a third cat?"</span>
+<span class="t-cmd">overthink</span> <span class="t-str">"Is pineapple on pizza a moral issue?"</span>
+<span class="t-cmd">overthink</span> <span class="t-str">"Why did I message them at 2am?"</span></pre>
             </div>
         </section>
 
@@ -232,7 +244,7 @@ overthink "Why did I message them at 2am?"</code>
                 This tool will make it feel <strong>peer-reviewed</strong> and <strong>scientifically justified.</strong>
             </blockquote>
             <p class="closing-cta">Now stop reading and run:</p>
-            <code class="code-block closing-code">overthink "something that matters"</code>
+            <code class="code-block closing-code"><span class="t-cmd">overthink</span> <span class="t-str">"something that matters"</span></code>
             <div class="closing-rule"></div>
         </section>
 
