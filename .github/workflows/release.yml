@@ -217,7 +217,8 @@ jobs:
         run: |
           cd build\packages\chocolatey
           choco pack overthink.nuspec
-          choco push overthink.*.nupkg `
+          $nupkg = Get-ChildItem overthink.*.nupkg | Select-Object -First 1
+          choco push $nupkg.FullName `
             --source https://push.chocolatey.org `
             --api-key $env:CHOCO_API_KEY
 
