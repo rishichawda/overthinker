@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>overthink — The CLI That Panics For You</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Instrument+Serif:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Masthead -->
+    <header class="masthead">
+        <div class="masthead-rule"></div>
+        <div class="masthead-inner">
+            <p class="masthead-edition">Vol. ∞ &middot; No. 1 &middot; Every Run Is Different</p>
+            <h1 class="masthead-title">overthink</h1>
+            <p class="masthead-subtitle">The CLI That Panics&hairsp;&mdash;&hairsp;Theatrically</p>
+        </div>
+        <div class="masthead-rule"></div>
+        <nav class="masthead-nav">
+            <a href="#problem">The Problem</a>
+            <span class="nav-dot">&bull;</span>
+            <a href="#analysis">Analysis</a>
+            <span class="nav-dot">&bull;</span>
+            <a href="#install">Get It</a>
+            <span class="nav-dot">&bull;</span>
+            <a href="https://github.com/rishichawda/overthinker">GitHub</a>
+        </nav>
+    </header>
+
+    <main class="page">
+
+        <!-- Headline -->
+        <section class="headline-section">
+            <p class="kicker">Breaking</p>
+            <h2 class="headline">Local Developer Asks Simple Question;&ensp;Receives Peer-Reviewed Academic Analysis Instead</h2>
+            <p class="byline">By <span class="author">overthink v0.1.0</span>&ensp;&middot;&ensp;Read time: longer than you'd like</p>
+        </section>
+
+        <!-- The Lede -->
+        <section class="lede" id="problem">
+            <div class="dropcap-wrap">
+                <p><span class="dropcap">Y</span>ou have a simple question. Maybe it's <em>"Should I quit my job?"</em> Maybe it's <em>"Is pineapple on pizza a moral issue?"</em> In either case, what you need is <strong>not</strong> a simple answer. What you need is a peer-reviewed academic analysis complete with fabricated statistics, fictional citations, and a philosophical conclusion that validates whatever you were already planning to do anyway.</p>
+            </div>
+            <p><code class="inline-code">overthink</code> is that tool.</p>
+        </section>
+
+        <!-- Pull Quote -->
+        <aside class="pull-quote">
+            <blockquote>
+                "63.4% chance of immediate regret&hairsp;&mdash;&hairsp;which is <em>suspiciously specific.</em>"
+            </blockquote>
+            <cite>&mdash; Journal of Speculative Self-Sabotage, Vol. 12</cite>
+        </aside>
+
+        <!-- Terminal Demo -->
+        <section class="terminal-section">
+            <div class="terminal">
+                <div class="terminal-bar">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                    <span class="terminal-title">overthink</span>
+                </div>
+                <div class="terminal-body">
+<pre><span class="t-prompt">$</span> overthink "Should I quit my job?"
+
+<span class="t-title">═══════════════════════════════════════════════
+  THE GREAT RESIGNATION PARADOX: A TREATISE
+═══════════════════════════════════════════════</span>
+
+<span class="t-label">Executive Summary:</span>
+<span class="t-text">Your question has been analyzed with the rigor
+of a doctoral committee that bills by the hour.</span>
+
+<span class="t-label">Probability Breakdown:</span>
+<span class="t-text">  Success if you quit .... </span><span class="t-green">██████████████</span><span class="t-text"> 71.2%</span>
+<span class="t-text">  Regret by Thursday .... </span><span class="t-yellow">████████████</span><span class="t-text">   63.4%</span>
+<span class="t-text">  Existential crisis .... </span><span class="t-red">████████████████</span><span class="t-text"> 89.1%</span>
+
+<span class="t-label">Emotional Risk Index:</span> <span class="t-red">████████████████████░░</span> <span class="t-red">87/100</span>
+
+<span class="t-label">Citation:</span>
+<span class="t-dim">  [1] Henderson et al., "Premature Career Exits
+      and Their Correlation with 2AM Decision-Making"
+      Proceedings on Human Indecision (Special Issue)</span>
+
+<span class="t-label">Grand Conclusion:</span>
+<span class="t-text">You should absolutely do it. Or not. The data
+is both definitive and utterly non-committal.</span></pre>
+                </div>
+            </div>
+            <p class="terminal-footnote">* Output is randomized. Same question, infinite drama. Nothing above is real, including your confidence.</p>
+        </section>
+
+        <!-- Features as "Findings" -->
+        <section class="findings-section" id="analysis">
+            <h2 class="section-heading">Key Findings</h2>
+            <p class="section-subheading">Every invocation produces the following deliverables<sup>†</sup></p>
+
+            <div class="findings-grid">
+                <div class="finding">
+                    <span class="finding-number">01</span>
+                    <h3>Dramatic Titles</h3>
+                    <p>ALL-CAPS recontextualizations of your question as if it were the plot of an existential thriller.</p>
+                </div>
+                <div class="finding">
+                    <span class="finding-number">02</span>
+                    <h3>Executive Summary</h3>
+                    <p>Delivered with the confidence of a consultant who bills $400/hour and has never been wrong (allegedly).</p>
+                </div>
+                <div class="finding">
+                    <span class="finding-number">03</span>
+                    <h3>Probability Breakdown</h3>
+                    <p>Suspiciously precise percentages that somehow always feel <em>disturbingly accurate.</em></p>
+                </div>
+                <div class="finding">
+                    <span class="finding-number">04</span>
+                    <h3>Risk Visualization</h3>
+                    <p>Colored ASCII bars that shift from calm green &rarr; concerning yellow &rarr; <em>alarming red.</em></p>
+                </div>
+                <div class="finding">
+                    <span class="finding-number">05</span>
+                    <h3>Academic Citations</h3>
+                    <p>From peer-reviewed publications that absolutely do not exist, such as <em>"Journal of Speculative Self-Sabotage."</em></p>
+                </div>
+                <div class="finding">
+                    <span class="finding-number">06</span>
+                    <h3>Grand Conclusion</h3>
+                    <p>A final verdict that is simultaneously definitive and utterly non-committal. <em>You're welcome.</em></p>
+                </div>
+            </div>
+
+            <p class="footnote"><sup>†</sup> Deliverables are non-binding, non-refundable, and not admissible in court.</p>
+        </section>
+
+        <!-- How it works -->
+        <section class="mechanism-section">
+            <h2 class="section-heading">Mechanism of Action</h2>
+            <div class="mechanism-grid">
+                <div class="mechanism">
+                    <h3>Local Mode <span class="tag">default</span></h3>
+                    <p>Runs <strong>entirely offline</strong>. Uses a time-seeded random number generator, so every invocation produces fresh, unique drama. No two analyses of the same question will ever be identical&hairsp;&mdash;&hairsp;<em>unless you're running them so fast the clock hasn't changed, which says something about your anxiety levels.</em></p>
+                </div>
+                <div class="mechanism">
+                    <h3>LLM Mode <span class="tag">--thinker</span></h3>
+                    <p>Pipe your question through a <strong>local Ollama model</strong> and let an AI add its own neuroses. If anything fails&hairsp;&mdash;&hairsp;Ollama not installed, model missing, timeout&hairsp;&mdash;&hairsp;the tool gracefully falls back to the local engine. <em>The drama never stops.</em></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Install -->
+        <section class="install-section" id="install">
+            <h2 class="section-heading">Acquire the Tool</h2>
+            <p class="section-subheading">Choose your vector of self-sabotage</p>
+
+            <div class="install-grid">
+                <div class="install-option">
+                    <h3>Homebrew</h3>
+                    <span class="install-platform">macOS &amp; Linux</span>
+                    <code class="code-block">brew install rishichawda/tap/overthink</code>
+                </div>
+
+                <div class="install-option">
+                    <h3>Chocolatey</h3>
+                    <span class="install-platform">Windows</span>
+                    <code class="code-block">choco install overthink</code>
+                </div>
+
+                <div class="install-option">
+                    <h3>Bash Script</h3>
+                    <span class="install-platform">macOS &amp; Linux</span>
+                    <code class="code-block">curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | bash</code>
+                </div>
+
+                <div class="install-option">
+                    <h3>APT</h3>
+                    <span class="install-platform">Ubuntu / Debian</span>
+                    <code class="code-block">curl -1sLf 'https://rishichawda.github.io/overthinker/overthink-archive-keyring.gpg' \
+  | sudo gpg --dearmor -o /usr/share/keyrings/rishichawda-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/rishichawda-archive-keyring.gpg] \
+  https://rishichawda.github.io/overthinker stable main" \
+  | sudo tee /etc/apt/sources.list.d/rishichawda.list
+
+sudo apt-get update && sudo apt-get install overthink</code>
+                </div>
+
+                <div class="install-option">
+                    <h3>DNF / Copr</h3>
+                    <span class="install-platform">Fedora / RHEL</span>
+                    <code class="code-block">sudo dnf copr enable rishichawda/overthink
+sudo dnf install overthink</code>
+                </div>
+
+                <div class="install-option">
+                    <h3>Go Install</h3>
+                    <span class="install-platform">Any platform with Go</span>
+                    <code class="code-block">go install github.com/rishichawda/overthinker/cmd/overthink@latest</code>
+                </div>
+            </div>
+
+            <p class="install-also">Or just <a href="https://github.com/rishichawda/overthinker/releases" class="link">download the binary</a> like a person who has already made up their mind.</p>
+        </section>
+
+        <!-- Usage -->
+        <section class="usage-section">
+            <h2 class="section-heading">Field Application</h2>
+            <div class="usage-examples">
+                <code class="code-block"><span class="t-dim"># The basics</span>
+overthink "Should I quit my job?"
+
+<span class="t-dim"># Let a local LLM add its own neuroses</span>
+overthink --thinker llama3 "What does my life mean?"
+
+<span class="t-dim"># The truly important questions</span>
+overthink "Should I adopt a third cat?"
+overthink "Is pineapple on pizza a moral issue?"
+overthink "Why did I message them at 2am?"</code>
+            </div>
+        </section>
+
+        <!-- Final thought -->
+        <section class="closing-section">
+            <div class="closing-rule"></div>
+            <blockquote class="closing-quote">
+                You're reading this because you have a question you're <em>overthinking.</em><br>
+                You've already decided what you want to do.<br>
+                This tool will make it feel <strong>peer-reviewed</strong> and <strong>scientifically justified.</strong>
+            </blockquote>
+            <p class="closing-cta">Now stop reading and run:</p>
+            <code class="code-block closing-code">overthink "something that matters"</code>
+            <div class="closing-rule"></div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <p class="footer-links">
+                <a href="https://github.com/rishichawda/overthinker">Source Code</a>
+                <span class="nav-dot">&bull;</span>
+                <a href="https://github.com/rishichawda/overthinker/releases">Releases</a>
+                <span class="nav-dot">&bull;</span>
+                <a href="https://github.com/rishichawda/overthinker/blob/main/LICENSE">MIT License</a>
+            </p>
+            <p class="footer-tagline">Because sometimes, you don't need answers. You need <strong>drama.</strong></p>
+            <p class="footer-colophon">Set in Instrument Serif, DM Mono &amp; Inter. No real research was harmed.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
