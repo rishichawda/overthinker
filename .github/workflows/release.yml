@@ -200,12 +200,12 @@ jobs:
         shell: pwsh
         run: |
           (Get-Content build\packages\chocolatey\overthink.nuspec) `
-            -replace '<VERSION>', $env:VERSION | `
+            -creplace '<VERSION>', $env:VERSION | `
             Set-Content build\packages\chocolatey\overthink.nuspec
 
           (Get-Content build\packages\chocolatey\tools\chocolateyInstall.ps1) `
-            -replace '<VERSION>', $env:VERSION `
-            -replace '<WINDOWS_AMD64_SHA256>', $env:WIN_SHA256 | `
+            -creplace '<VERSION>', $env:VERSION `
+            -creplace '<WINDOWS_AMD64_SHA256>', $env:WIN_SHA256 | `
             Set-Content build\packages\chocolatey\tools\chocolateyInstall.ps1
 
       - name: Pack and push to Chocolatey
