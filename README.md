@@ -1,8 +1,13 @@
 # 🎭 overthink
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.24+-1f72ea.svg)](https://golang.org)
+[![Release](https://img.shields.io/github/v/release/rishichawda/overthinker?display_name=release)](https://github.com/rishichawda/overthinker/releases)
+[![Platform Support](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-blueviolet)](https://github.com/rishichawda/overthinker/releases)
+
 > **The CLI tool that answers your question in the *most unnecessarily elaborate way possible*.**
 >
-> *You ask. It panics. Theatrically.*
+> *You ask. It panics. Theatrically. Optionally with an LLM's neuroses.*
 
 ---
 
@@ -50,19 +55,59 @@ Every run is different. ***Same question, infinite drama.***
 
 ## 🚀 Installation
 
-**Requirements:** Go 1.22+ and the ~~courage~~ ***ability to make questionable life decisions***.
+Choose your preferred installation method:
+
+### 🍺 Homebrew (macOS & Linux)
 
 ```bash
-# Get the code
+brew install rishichawda/tap/overthink
+```
+
+### 🟫 Chocolatey (Windows)
+
+```powershell
+choco install overthink
+```
+
+### 📦 APT (Ubuntu/Debian)
+
+```bash
+curl -1sLf 'https://rishichawda.github.io/overthinker/KEY.gpg' | sudo gpg --dearmor -o /usr/share/keyrings/rishichawda-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/rishichawda-archive-keyring.gpg] https://rishichawda.github.io/overthinker stable main" | sudo tee /etc/apt/sources.list.d/rishichawda.list
+sudo apt-get update
+sudo apt-get install overthink
+```
+
+### 🎩 DNF (Fedora/RHEL)
+
+```bash
+sudo dnf copr enable rishichawda/overthink
+sudo dnf install overthink
+```
+
+### 🔨 Bash Install Script (macOS & Linux)
+
+**Recommended for quick setup:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | bash
+```
+
+Or with a custom installation directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | INSTALL_DIR=/usr/local/bin bash
+```
+
+### 📝 From Source (Go 1.22+)
+
+```bash
 git clone https://github.com/rishichawda/overthinker.git
 cd overthinker
-
-# Build it
 go build -o overthink ./cmd/overthink
-
-# Or just run it directly
-go run ./cmd/overthink "Am I having a quarter-life crisis?"
 ```
+
+**Platform Support:** macOS (Intel & Apple Silicon), Linux (x86_64, ARM64), Windows (x86_64, ARM64)
 
 ---
 
