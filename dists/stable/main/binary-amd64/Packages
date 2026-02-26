@@ -1,0 +1,14 @@
+Package: overthink
+Version: 0.1.0
+Architecture: amd64
+Maintainer: Rishi Chawda <rishiikumar97@gmail.com>
+Filename: pool/main/overthink_0.1.0_amd64.deb
+Size: 2363282
+MD5sum: a0fd70f2aed405f4271a3a8b417f751c
+SHA1: 5d3e9144a6dd2162fee31e0d7bb2eb0f7a268d12
+SHA256: cd6c1d31e252676380523b912ca49cd914843e683a01372a79365ac785ad6857
+Section: utils
+Priority: optional
+Homepage: https://github.com/rishichawda/overthinker
+Description: A dramatic overanalysis engine for your questionable life decisions.
+
