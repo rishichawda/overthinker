@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>overthink</id>
+    <version><VERSION></version>
+    <title>overthink</title>
+    <authors>Rishi Chawda</authors>
+    <projectUrl>https://github.com/rishichawda/overthinker</projectUrl>
+    <licenseUrl>https://github.com/rishichawda/overthinker/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      A dramatic overanalysis engine for your most questionable life decisions.
+      Provides fabricated statistics, fictional citations, an Emotional Risk Index,
+      and ASCII bar charts for any question you ask it.
+    </description>
+    <summary>A dramatic overanalysis engine for your questionable life decisions.</summary>
+    <tags>cli go fun analysis</tags>
+    <releaseNotes>https://github.com/rishichawda/overthinker/releases/tag/v<VERSION></releaseNotes>
+  </metadata>
+</package>
