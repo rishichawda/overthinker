@@ -233,6 +233,11 @@ jobs:
       - name: Install RPM build tools
         run: sudo apt-get update -qq && sudo apt-get install -y rpm curl
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
       - name: Build SRPM
         env:
           VERSION: ${{ needs.resolve-version.outputs.version }}
@@ -245,10 +250,15 @@ jobs:
           sed -i "s/^%{!?package_version:.*/%global package_version ${VERSION}/" \
             ~/rpmbuild/SPECS/overthink.spec
 
-          # Source0 URL ends with v<VERSION>.tar.gz — filename must match
+          # Download source, vendor Go dependencies, and repackage.
+          # COPR mock chroots have NO network — vendored deps are the only
+          # way Go can resolve imports during the offline %build phase.
           curl -fsSL \
             "https://github.com/rishichawda/overthinker/archive/refs/tags/v${VERSION}.tar.gz" \
-            -o ~/rpmbuild/SOURCES/v${VERSION}.tar.gz
+            -o /tmp/source.tar.gz
+          mkdir -p /tmp/repack && tar xzf /tmp/source.tar.gz -C /tmp/repack
+          cd /tmp/repack/overthinker-${VERSION} && go mod vendor && cd -
+          tar czf ~/rpmbuild/SOURCES/v${VERSION}.tar.gz -C /tmp/repack overthinker-${VERSION}
 
           # Build source RPM only
           rpmbuild -bs ~/rpmbuild/SPECS/overthink.spec

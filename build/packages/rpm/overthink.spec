@@ -1,3 +1,6 @@
+# Disable debug packages — Go binaries built with -s -w have no debug info
+%global debug_package %{nil}
+
 Name:           overthink
 # Version is injected at build time via: rpmbuild --define "package_version X.Y.Z"
 %{!?package_version: %define package_version 0.0.0}
@@ -21,7 +24,9 @@ an Emotional Risk Index, and ASCII bar charts.
 
 %build
 export CGO_ENABLED=0
-go build -trimpath -ldflags "-s -w" -o overthink ./cmd/overthink
+# -mod=vendor uses the bundled vendor/ directory so no network is needed
+# (COPR mock builds have no internet access)
+go build -mod=vendor -trimpath -ldflags "-s -w" -o overthink ./cmd/overthink
 
 %install
 install -Dpm 0755 overthink %{buildroot}%{_bindir}/overthink
