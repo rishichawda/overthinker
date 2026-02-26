@@ -4,17 +4,41 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish to apt / Chocolatey / COPR (without v prefix, e.g. 0.1.0). GoReleaser is skipped — the GitHub Release must already exist."
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  # ── 1. GoReleaser: builds binaries, creates GitHub Release,
-  #       uploads all assets, commits Homebrew formula ──────────────────────
-  goreleaser:
+  # ── 0. Resolve version ────────────────────────────────────────────────────
+  # On tag push:          parses the tag (v0.1.0 → 0.1.0)
+  # On workflow_dispatch: uses the version input directly
+  resolve-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Resolve version
+        id: resolve
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── 1. GoReleaser: builds binaries, creates GitHub Release,
+  #       uploads all assets, commits Homebrew formula ──────────────────────
+  # Skipped on workflow_dispatch — the release already exists in that case.
+  goreleaser:
+    needs: resolve-version
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,10 +47,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
-      - name: Set version output
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - uses: goreleaser/goreleaser-action@v6
         with:
@@ -39,7 +59,8 @@ jobs:
 
   # ── 2. apt: build .deb packages and publish to gh-pages ─────────────────
   apt:
-    needs: goreleaser
+    needs: [resolve-version, goreleaser]
+    if: always() && needs.resolve-version.result == 'success' && (needs.goreleaser.result == 'success' || needs.goreleaser.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +82,7 @@ jobs:
       - name: Download Linux binaries from release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.goreleaser.outputs.version }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
           gh release download "v${VERSION}" \
             --repo rishichawda/overthinker \
@@ -70,7 +91,7 @@ jobs:
 
       - name: Build .deb packages
         env:
-          VERSION: ${{ needs.goreleaser.outputs.version }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
           for arch in x86_64 arm64; do
             deb_arch="amd64"
@@ -101,7 +122,7 @@ jobs:
 
       - name: Rebuild apt repo index
         env:
-          VERSION: ${{ needs.goreleaser.outputs.version }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           REPO=gh-pages
@@ -147,12 +168,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "apt: publish v${{ needs.goreleaser.outputs.version }}"
+          git commit -m "apt: publish v${{ needs.resolve-version.outputs.version }}"
           git push origin gh-pages
 
   # ── 3. Chocolatey ─────────────────────────────────────────────────────────
   chocolatey:
-    needs: goreleaser
+    needs: [resolve-version, goreleaser]
+    if: always() && needs.resolve-version.result == 'success' && (needs.goreleaser.result == 'success' || needs.goreleaser.result == 'skipped')
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -161,7 +183,7 @@ jobs:
         id: sha
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.goreleaser.outputs.version }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         shell: pwsh
         run: |
           gh release download "v$env:VERSION" `
@@ -173,7 +195,7 @@ jobs:
 
       - name: Substitute version and checksum
         env:
-          VERSION: ${{ needs.goreleaser.outputs.version }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
           WIN_SHA256: ${{ steps.sha.outputs.hash }}
         shell: pwsh
         run: |
@@ -199,7 +221,8 @@ jobs:
 
   # ── 4. COPR (dnf / RPM) ───────────────────────────────────────────────────
   copr:
-    needs: goreleaser
+    needs: [resolve-version, goreleaser]
+    if: always() && needs.resolve-version.result == 'success' && (needs.goreleaser.result == 'success' || needs.goreleaser.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -226,4 +249,4 @@ jobs:
             --clone-url https://github.com/rishichawda/overthinker \
             --spec build/packages/rpm/overthink.spec \
             --type git \
-            --commit ${{ github.ref_name }}
+            --commit v${{ needs.resolve-version.outputs.version }}
