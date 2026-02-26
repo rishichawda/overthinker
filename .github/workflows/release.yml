@@ -3,27 +3,32 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  # ── 1. GoReleaser: builds binaries, creates GitHub Release,
+  #       uploads all assets, commits Homebrew formula ──────────────────────
+  goreleaser:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+      - name: Set version output
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
@@ -31,3 +36,194 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+
+  # ── 2. apt: build .deb packages and publish to gh-pages ─────────────────
+  apt:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Install tools
+        run: sudo apt-get install -y dpkg-dev apt-utils
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | base64 -d | \
+            gpg --batch --passphrase "$GPG_PASSPHRASE" --import
+
+      - name: Download Linux binaries from release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.goreleaser.outputs.version }}
+        run: |
+          gh release download "v${VERSION}" \
+            --repo rishichawda/overthinker \
+            --pattern "overthink_Linux_*.tar.gz" \
+            --dir /tmp/release
+
+      - name: Build .deb packages
+        env:
+          VERSION: ${{ needs.goreleaser.outputs.version }}
+        run: |
+          for arch in x86_64 arm64; do
+            deb_arch="amd64"
+            [[ "$arch" == "arm64" ]] && deb_arch="arm64"
+
+            tarball="/tmp/release/overthink_Linux_${arch}.tar.gz"
+            pkg="overthink_${VERSION}_${deb_arch}"
+            mkdir -p "${pkg}/DEBIAN" "${pkg}/usr/local/bin"
+            mkdir -p "/tmp/bin_${arch}"
+
+            tar -xzf "$tarball" -C "/tmp/bin_${arch}"
+            cp "/tmp/bin_${arch}/overthink" "${pkg}/usr/local/bin/overthink"
+            chmod 755 "${pkg}/usr/local/bin/overthink"
+
+            cat > "${pkg}/DEBIAN/control" <<EOF
+          Package: overthink
+          Version: ${VERSION}
+          Architecture: ${deb_arch}
+          Maintainer: Rishi Chawda <rishichawda@users.noreply.github.com>
+          Description: A dramatic overanalysis engine for your questionable life decisions.
+          Homepage: https://github.com/rishichawda/overthinker
+          Section: utils
+          Priority: optional
+          EOF
+
+            dpkg-deb --build --root-owner-group "${pkg}"
+          done
+
+      - name: Rebuild apt repo index
+        env:
+          VERSION: ${{ needs.goreleaser.outputs.version }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          REPO=gh-pages
+          mkdir -p ${REPO}/pool/main \
+                   ${REPO}/dists/stable/main/binary-amd64 \
+                   ${REPO}/dists/stable/main/binary-arm64
+
+          cp overthink_${VERSION}_amd64.deb ${REPO}/pool/main/
+          cp overthink_${VERSION}_arm64.deb ${REPO}/pool/main/
+
+          (cd ${REPO} && dpkg-scanpackages pool/main /dev/null \
+            > dists/stable/main/binary-amd64/Packages)
+          gzip -kf ${REPO}/dists/stable/main/binary-amd64/Packages
+
+          (cd ${REPO} && dpkg-scanpackages --arch arm64 pool/main /dev/null \
+            > dists/stable/main/binary-arm64/Packages)
+          gzip -kf ${REPO}/dists/stable/main/binary-arm64/Packages
+
+          cat > ${REPO}/dists/stable/Release <<EOF
+          Origin: overthink
+          Label: overthink
+          Suite: stable
+          Codename: stable
+          Architectures: amd64 arm64
+          Components: main
+          Description: overthink apt repository
+          EOF
+
+          (cd ${REPO} && apt-ftparchive release dists/stable \
+            >> dists/stable/Release)
+
+          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" \
+              -abs -o ${REPO}/dists/stable/Release.gpg \
+              ${REPO}/dists/stable/Release
+
+          gpg --batch --yes --passphrase "$GPG_PASSPHRASE" \
+              --clearsign -o ${REPO}/dists/stable/InRelease \
+              ${REPO}/dists/stable/Release
+
+      - name: Push gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "apt: publish v${{ needs.goreleaser.outputs.version }}"
+          git push origin gh-pages
+
+  # ── 3. Chocolatey ─────────────────────────────────────────────────────────
+  chocolatey:
+    needs: goreleaser
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get Windows asset SHA256
+        id: sha
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.goreleaser.outputs.version }}
+        shell: pwsh
+        run: |
+          gh release download "v$env:VERSION" `
+            --repo rishichawda/overthinker `
+            --pattern "overthink_Windows_x86_64.zip" `
+            --dir $env:TEMP
+          $hash = (Get-FileHash "$env:TEMP\overthink_Windows_x86_64.zip" -Algorithm SHA256).Hash
+          echo "hash=$hash" >> $env:GITHUB_OUTPUT
+
+      - name: Substitute version and checksum
+        env:
+          VERSION: ${{ needs.goreleaser.outputs.version }}
+          WIN_SHA256: ${{ steps.sha.outputs.hash }}
+        shell: pwsh
+        run: |
+          (Get-Content build\packages\chocolatey\overthink.nuspec) `
+            -replace '<VERSION>', $env:VERSION | `
+            Set-Content build\packages\chocolatey\overthink.nuspec
+
+          (Get-Content build\packages\chocolatey\tools\chocolateyInstall.ps1) `
+            -replace '<VERSION>', $env:VERSION `
+            -replace '<WINDOWS_AMD64_SHA256>', $env:WIN_SHA256 | `
+            Set-Content build\packages\chocolatey\tools\chocolateyInstall.ps1
+
+      - name: Pack and push to Chocolatey
+        env:
+          CHOCO_API_KEY: ${{ secrets.CHOCOLATEY_API_KEY }}
+        shell: pwsh
+        run: |
+          cd build\packages\chocolatey
+          choco pack overthink.nuspec
+          choco push overthink.*.nupkg `
+            --source https://push.chocolatey.org `
+            --api-key $env:CHOCO_API_KEY
+
+  # ── 4. COPR (dnf / RPM) ───────────────────────────────────────────────────
+  copr:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install copr-cli
+        run: pip install copr-cli
+
+      - name: Configure COPR credentials
+        env:
+          COPR_API_TOKEN: ${{ secrets.COPR_API_TOKEN }}
+        run: |
+          mkdir -p ~/.config
+          cat > ~/.config/copr <<EOF
+          [copr-cli]
+          login = rishichawda
+          username = rishichawda
+          token = ${COPR_API_TOKEN}
+          copr_url = https://copr.fedorainfracloud.org
+          EOF
+
+      - name: Submit COPR build
+        run: |
+          copr-cli buildscm rishichawda/overthink \
+            --clone-url https://github.com/rishichawda/overthinker \
+            --spec build/packages/rpm/overthink.spec \
+            --type git \
+            --commit ${{ github.ref_name }}
