@@ -24,7 +24,7 @@ builds:
 
 archives:
   - id: overthink
-    builds:
+    ids:
       - overthink
     name_template: >-
       {{ .ProjectName }}_
