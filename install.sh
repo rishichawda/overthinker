@@ -1,5 +1,8 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+# POSIX sh: runs on dash, BusyBox ash (Alpine), and macOS /bin/sh without bash.
+# There is no `pipefail` in POSIX sh, so pipelines whose first command can fail
+# capture its output first and check the status explicitly.
+set -eu
 
 REPO="rishichawda/overthinker"
 BINARY="overthink"
@@ -11,7 +14,7 @@ info()  { printf "\033[1;34m[overthink]\033[0m %s\n" "$*"; }
 error() { printf "\033[1;31m[overthink error]\033[0m %s\n" "$*" >&2; exit 1; }
 
 need() {
-  command -v "$1" &>/dev/null || error "Required tool not found: $1"
+  command -v "$1" >/dev/null 2>&1 || error "Required tool not found: $1"
 }
 
 # ── detect OS and arch ───────────────────────────────────────────────────────
@@ -35,24 +38,28 @@ detect_arch() {
 # ── resolve latest version ───────────────────────────────────────────────────
 
 resolve_version() {
-  if [[ -n "${VERSION:-}" ]]; then
+  if [ -n "${VERSION:-}" ]; then
     echo "$VERSION"
     return
   fi
   need curl
-  curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-    | grep '"tag_name"' \
-    | sed -E 's/.*"v?([^"]+)".*/\1/'
+  release_json="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest")" \
+    || error "Could not look up the latest release of ${REPO}"
+  tag="$(printf '%s\n' "$release_json" | grep '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/')"
+  [ -n "$tag" ] || error "Could not determine the latest release of ${REPO}"
+  echo "$tag"
 }
 
 # ── checksum verification ────────────────────────────────────────────────────
 
-# Prefer sha256sum (standard on Linux); fall back to shasum (macOS / Perl)
+# Prefer sha256sum (standard on Linux, BusyBox); fall back to shasum (macOS / Perl).
+# Output is discarded because the exit status is what matters and BusyBox has no --status.
+# The explicit "-" is required: macOS sha256sum prints usage and fails when -c has no file.
 sha256_verify() {
-  if command -v sha256sum &>/dev/null; then
-    sha256sum -c --status
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum -c - >/dev/null
   else
-    shasum -a 256 -c --status
+    shasum -a 256 -c - >/dev/null
   fi
 }
 
@@ -61,8 +68,6 @@ sha256_verify() {
 main() {
   need curl
   need tar
-
-  local os arch version tarball url checksum_url tmp_dir
 
   os="$(detect_os)"
   arch="$(detect_arch)"
@@ -74,6 +79,7 @@ main() {
   url="https://github.com/${REPO}/releases/download/v${version}/${tarball}"
   checksum_url="https://github.com/${REPO}/releases/download/v${version}/checksums.txt"
 
+  # Global on purpose: the EXIT trap runs after main returns, when a local would be unset.
   tmp_dir="$(mktemp -d)"
   trap 'rm -rf "$tmp_dir"' EXIT
 
@@ -82,18 +88,19 @@ main() {
 
   info "Verifying checksum..."
   curl -fsSL "$checksum_url" -o "${tmp_dir}/checksums.txt"
-  grep "${tarball}" "${tmp_dir}/checksums.txt" \
-    | (cd "$tmp_dir" && sha256_verify) \
+  checksum_line="$(grep "${tarball}" "${tmp_dir}/checksums.txt")" \
+    || error "No checksum listed for ${tarball}."
+  (cd "$tmp_dir" && printf '%s\n' "$checksum_line" | sha256_verify) \
     || error "Checksum verification failed. The download may be corrupted."
 
   info "Extracting..."
   tar -xzf "${tmp_dir}/${tarball}" -C "$tmp_dir"
 
-  if [[ -w "$INSTALL_DIR" ]] || [[ "$(id -u)" -eq 0 ]]; then
+  if [ -w "$INSTALL_DIR" ] || [ "$(id -u)" -eq 0 ]; then
     install -m 755 "${tmp_dir}/${BINARY}" "${INSTALL_DIR}/${BINARY}"
     info "Installed to ${INSTALL_DIR}/${BINARY}"
   else
-    local user_dir="${HOME}/.local/bin"
+    user_dir="${HOME}/.local/bin"
     mkdir -p "$user_dir"
     install -m 755 "${tmp_dir}/${BINARY}" "${user_dir}/${BINARY}"
     info "Installed to ${user_dir}/${BINARY}"
