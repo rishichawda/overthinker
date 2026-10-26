@@ -1,7 +1,7 @@
 # 🎭 overthink
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.24+-1f72ea.svg)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.26.10+-1f72ea.svg)](https://golang.org)
 [![Release](https://img.shields.io/github/v/release/rishichawda/overthinker?display_name=release)](https://github.com/rishichawda/overthinker/releases)
 [![Platform Support](https://img.shields.io/badge/platforms-macOS%20%7C%20Linux%20%7C%20Windows-blueviolet)](https://github.com/rishichawda/overthinker/releases)
 
@@ -99,7 +99,7 @@ Or with a custom installation directory:
 curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | INSTALL_DIR=/usr/local/bin bash
 ```
 
-### 📝 From Source (Go 1.22+)
+### 📝 From Source (Go 1.26.10+)
 
 ```bash
 git clone https://github.com/rishichawda/overthinker.git
