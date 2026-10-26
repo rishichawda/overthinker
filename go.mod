@@ -1,8 +1,6 @@
 module github.com/rishichawda/overthinker
 
-go 1.24.1
-
-toolchain go1.24.2
+go 1.26.10
 
 require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect

@@ -12,7 +12,7 @@ License:        MIT
 URL:            https://github.com/rishichawda/overthinker
 Source0:        https://github.com/rishichawda/overthinker/archive/refs/tags/v%{package_version}.tar.gz
 
-BuildRequires:  golang >= 1.24
+BuildRequires:  golang >= 1.26.10
 
 %description
 overthink answers your questions in the most unnecessarily elaborate way
