@@ -72,7 +72,7 @@ choco install overthink
 ### 📦 APT (Ubuntu/Debian)
 
 ```bash
-curl -1sLf 'https://rishichawda.github.io/overthinker/KEY.gpg' | sudo gpg --dearmor -o /usr/share/keyrings/rishichawda-archive-keyring.gpg
+curl -1sLf 'https://rishichawda.github.io/overthinker/overthink-archive-keyring.gpg' | sudo gpg --dearmor -o /usr/share/keyrings/rishichawda-archive-keyring.gpg
 echo "deb [signed-by=/usr/share/keyrings/rishichawda-archive-keyring.gpg] https://rishichawda.github.io/overthinker stable main" | sudo tee /etc/apt/sources.list.d/rishichawda.list
 sudo apt-get update
 sudo apt-get install overthink
