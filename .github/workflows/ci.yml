@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # New advisories appear without any commit, so rescan weekly.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
+
+      - name: Check module files are tidy
+        run: go mod tidy -diff
+
+      - name: Verify module checksums
+        run: go mod verify
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
+
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
+
+      # github.com/ollama/ollama is imported for its api client package, which
+      # pulls in server code that has advisories with no fixed version. The CLI
+      # only talks to a local Ollama server. Fail on any other reachable
+      # vulnerability, and remove an ID from this list once it is fixed.
+      - name: Scan for reachable vulnerabilities
+        env:
+          ACCEPTED: >-
+            GO-2025-3557 GO-2025-3558 GO-2025-3559 GO-2025-3582
+            GO-2025-3689 GO-2025-3695 GO-2025-3824 GO-2025-4251
+        run: |
+          govulncheck -format json ./... > vuln.json
+          allowed=$(printf '%s\n' $ACCEPTED | jq -R . | jq -s .)
+          unexpected=$(jq -r --argjson allowed "$allowed" '
+            select(.finding != null and .finding.trace[0].function != null)
+            | .finding.osv
+            | select(. as $id | $allowed | index($id) | not)
+          ' vuln.json | sort -u)
+          if [ -n "$unexpected" ]; then
+            echo "Reachable vulnerabilities not in the accepted list:"
+            echo "$unexpected"
+            govulncheck ./... || true
+            exit 1
+          fi
