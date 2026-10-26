@@ -1,0 +1,5 @@
+.DS_Store
+dist/
+# Local credentials for package publishing; never commit
+gpg_private_key.b64
+docs/.config.copr
