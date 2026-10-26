@@ -90,13 +90,13 @@ sudo dnf install overthink
 **Recommended for quick setup:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | sh
 ```
 
 Or with a custom installation directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | INSTALL_DIR=/usr/local/bin bash
+curl -fsSL https://raw.githubusercontent.com/rishichawda/overthinker/main/install.sh | INSTALL_DIR=/usr/local/bin sh
 ```
 
 ### 📝 From Source (Go 1.26.10+)
